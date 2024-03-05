@@ -9,9 +9,10 @@ Repo for test and validate the issue on VSO using tenants.
    gh repo clone florintp-onboarding/vault-on-kind-raft3nodes
    cd vault-on-kind-raft3nodes
    ```
-4. Observe the recorded session
+4. Observe the recorded sessions
    ```
-   cat 139527.rec
+   #Broken one: cat 139527.rec
+   cat 139527-2.rec
    ```
 
 
@@ -44,23 +45,56 @@ Repo for test and validate the issue on VSO using tenants.
 6. Check the state of the POD from deployed application and observe that it is still in <bold>ContainerCreating</code> state:
    ```
    date ;kubectl get pods -A |egrep 'NAME|vault|tenant'
+   date ; kubectl get crds
+   date ;kubectl -n kns1 exec -i vaultkns1-0 -- vault kv get -format=json  kvv2/secret |jq -r '.data.data'
+   date ;kubectl -n kns2 exec -i vaultkns2-0 -- vault kv get -format=json  kvv2/secret |jq -r '.data.data'
+   kubectl exec -ti -n tenant-1 $(kubectl get pods -n tenant-1|grep Runn)  -- cat  /etc/secrets/password
+   echo
+   kubectl exec -ti -n tenant-2 $(kubectl get pods -n tenant-2|grep Runn)  -- cat  /etc/secrets/password
+   echo
+   ```
+   (Optional checks)
+   ```
    date ; kubectl get deployments -A
    date ; kubectl describe pod -n tenant-1
    date ; kubectl get sa -A
-   date ; kubectl get crds
+ 
    ```
 7. The similar output may be:
-   ```
-   Fri Mar  1 10:12:39 CET 2024
-   NAMESPACE                NAME                                                         READY   STATUS              RESTARTS   AGE
-   kns1                     vaultkns1-0                                                  1/1     Running             0          30m
-   kns1                     vaultkns1-1                                                  1/1     Running             0          30m
-   kns1                     vaultkns1-2                                                  1/1     Running             0          30m
-   kns1                     vaultkns1-agent-injector-6fbf8d7db6-s9mtp                    1/1     Running             0          30m
-   kns2                     vaultkns2-0                                                  1/1     Running             0          30m
-   kns2                     vaultkns2-1                                                  1/1     Running             0          30m
-   kns2                     vaultkns2-2                                                  1/1     Running             0          30m
-   kns2                     vaultkns2-agent-injector-7f65575b56-rsq7d                    1/1     Running             0          30m
-   tenant-1                 static-demo-66887f4f8f-nblt7                                 0/1     ContainerCreating   0          28m
-   vault-secrets-operator   vault-secrets-operator-controller-manager-7f9b5577d6-hlgl2   2/2     Running             0          29m
-   ```
+````
+Tue Mar  5 10:55:08 CET 2024
+NAMESPACE                NAME                                                         READY   STATUS    RESTARTS   AGE
+kns1                     vaultkns1-0                                                  1/1     Running   0          6m33s
+kns1                     vaultkns1-1                                                  1/1     Running   0          6m32s
+kns1                     vaultkns1-2                                                  1/1     Running   0          6m32s
+kns1                     vaultkns1-agent-injector-6fbf8d7db6-r6k9n                    1/1     Running   0          6m33s
+kns2                     vaultkns2-0                                                  1/1     Running   0          5m54s
+kns2                     vaultkns2-1                                                  1/1     Running   0          5m53s
+kns2                     vaultkns2-2                                                  1/1     Running   0          5m53s
+kns2                     vaultkns2-agent-injector-7f65575b56-knrrr                    1/1     Running   0          5m54s
+tenant-1                 static-demo-858ccf5897-bglqq                                 1/1     Running   0          107s
+tenant-2                 static-demo-old-66cfc4bb7d-ppxnr                             1/1     Running   0          107s
+vault-secrets-operator   vault-secrets-operator-controller-manager-7f9b5577d6-lg9hf   2/2     Running   0          5m19s
+Tue Mar  5 10:55:08 CET 2024
+NAME                                          CREATED AT
+hcpauths.secrets.hashicorp.com                2024-03-05T09:49:49Z
+hcpvaultsecretsapps.secrets.hashicorp.com     2024-03-05T09:49:49Z
+secrettransformations.secrets.hashicorp.com   2024-03-05T09:49:49Z
+vaultauths.secrets.hashicorp.com              2024-03-05T09:49:49Z
+vaultconnections.secrets.hashicorp.com        2024-03-05T09:49:49Z
+vaultdynamicsecrets.secrets.hashicorp.com     2024-03-05T09:49:49Z
+vaultpkisecrets.secrets.hashicorp.com         2024-03-05T09:49:49Z
+vaultstaticsecrets.secrets.hashicorp.com      2024-03-05T09:49:49Z
+Tue Mar  5 10:55:09 CET 2024
+{
+  "password": "db-secret-password",
+  "username": "db-readonly-username"
+}
+Tue Mar  5 10:55:09 CET 2024
+{
+  "password": "db-secret-password-tenant-2-old",
+  "username": "db-readonly-username-old"
+}
+db-secret-password
+db-secret-password-tenant-2-old
+````
