@@ -98,3 +98,7 @@ Tue Mar  5 10:55:09 CET 2024
 db-secret-password
 db-secret-password-tenant-2-old
 ````
+8. Cleanup
+   ````
+   bash cleanup.sh
+   ````
